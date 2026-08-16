@@ -1,444 +1,986 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CamSpec — Camera Database</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CamSpec — Camera Database</title>
 
-  <style>
-    :root {
-      --bg: #f5f6f8;
-      --card: #ffffff;
-      --text: #15171a;
-      --muted: #6b7078;
-      --border: #e0e3e7;
-      --accent: #2563eb;
-    }
+<style>
+:root{
+  --bg:#0b0d10;
+  --card:#13171c;
+  --card2:#181d23;
+  --text:#f1f3f5;
+  --muted:#a5adb7;
+  --border:#303740;
+  --accent:#dfe3e8;
+  --danger:#e06b6b;
+}
 
-    [data-theme="dark"] {
-      --bg: #101216;
-      --card: #181b21;
-      --text: #f3f4f6;
-      --muted: #9ca3af;
-      --border: #2b3038;
-      --accent: #60a5fa;
-    }
+[data-theme="light"]{
+  --bg:#f4f5f7;
+  --card:#ffffff;
+  --card2:#f0f2f4;
+  --text:#15181c;
+  --muted:#69727c;
+  --border:#d4d9de;
+  --accent:#15181c;
+}
 
-    * {
-      box-sizing: border-box;
-    }
+*{
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
+}
 
-    body {
-      margin: 0;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      transition: background .2s, color .2s;
-    }
+body{
+  font-family:Arial,Helvetica,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  line-height:1.5;
+  transition:.25s;
+}
 
-    header {
-      position: sticky;
-      top: 0;
-      z-index: 10;
-      background: var(--card);
-      border-bottom: 1px solid var(--border);
-      padding: 16px 5%;
-    }
+button,input,select{
+  font:inherit;
+}
 
-    .nav {
-      max-width: 1400px;
-      margin: auto;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 20px;
-    }
+button{
+  cursor:pointer;
+}
 
-    .logo {
-      font-size: 25px;
-      font-weight: 800;
-      letter-spacing: -1px;
-    }
+.container{
+  width:min(1180px,92%);
+  margin:auto;
+}
 
-    .controls {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-    }
+/* HEADER */
 
-    button, select, input {
-      font: inherit;
-    }
+header{
+  border-bottom:1px solid var(--border);
+  position:sticky;
+  top:0;
+  z-index:20;
+  background:rgba(11,13,16,.94);
+  backdrop-filter:blur(12px);
+}
 
-    button {
-      cursor: pointer;
-    }
+[data-theme="light"] header{
+  background:rgba(244,245,247,.94);
+}
 
-    .small-button {
-      border: 1px solid var(--border);
-      background: var(--card);
-      color: var(--text);
-      border-radius: 9px;
-      padding: 9px 12px;
-    }
+.nav{
+  min-height:76px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:20px;
+}
 
-    main {
-      max-width: 1400px;
-      margin: auto;
-      padding: 40px 5%;
-    }
+.logo{
+  font-size:27px;
+  font-weight:800;
+  letter-spacing:-1.5px;
+}
 
-    .hero {
-      margin-bottom: 35px;
-    }
+.nav-actions{
+  display:flex;
+  gap:10px;
+}
 
-    h1 {
-      font-size: clamp(32px, 5vw, 52px);
-      margin: 0 0 10px;
-      letter-spacing: -2px;
-    }
+.btn{
+  border:1px solid var(--border);
+  background:var(--card);
+  color:var(--text);
+  padding:10px 16px;
+  border-radius:12px;
+  transition:.2s;
+}
 
-    .hero p {
-      color: var(--muted);
-      font-size: 18px;
-      max-width: 700px;
-    }
+.btn:hover{
+  transform:translateY(-1px);
+  border-color:var(--text);
+}
 
-    .filters {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 20px;
-      margin-bottom: 30px;
-    }
+/* HERO */
 
-    .filter-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 14px;
-    }
+.hero{
+  padding:75px 0 45px;
+}
 
-    .filter label {
-      display: block;
-      font-size: 13px;
-      color: var(--muted);
-      margin-bottom: 6px;
-    }
+.hero h1{
+  font-size:clamp(42px,7vw,76px);
+  letter-spacing:-3px;
+  line-height:1;
+  margin-bottom:24px;
+}
 
-    .filter input,
-    .filter select {
-      width: 100%;
-      padding: 11px;
-      border: 1px solid var(--border);
-      border-radius: 9px;
-      background: var(--bg);
-      color: var(--text);
-    }
+.hero p{
+  color:var(--muted);
+  font-size:20px;
+  max-width:700px;
+}
 
-    .results {
-      color: var(--muted);
-      margin-bottom: 15px;
-    }
+/* FILTERS */
 
-    .camera-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-      gap: 18px;
-    }
+.filters{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:20px;
+  padding:24px;
+  margin-bottom:45px;
+}
 
-    .camera {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 20px;
-      transition: transform .15s, border-color .15s;
-    }
+.filter-grid{
+  display:grid;
+  grid-template-columns:2fr 1fr 1fr 1fr;
+  gap:15px;
+}
 
-    .camera:hover {
-      transform: translateY(-2px);
-      border-color: var(--accent);
-    }
+.field label{
+  display:block;
+  color:var(--muted);
+  margin-bottom:8px;
+  font-size:14px;
+}
 
-    .camera h2 {
-      margin: 0 0 5px;
-      font-size: 20px;
-    }
+input,select{
+  width:100%;
+  padding:14px;
+  border-radius:12px;
+  border:1px solid var(--border);
+  background:var(--bg);
+  color:var(--text);
+  outline:none;
+}
 
-    .camera .brand {
-      color: var(--muted);
-      margin-bottom: 18px;
-    }
+input:focus,select:focus{
+  border-color:var(--text);
+}
 
-    .spec {
-      display: flex;
-      justify-content: space-between;
-      gap: 10px;
-      padding: 7px 0;
-      border-top: 1px solid var(--border);
-      font-size: 14px;
-    }
+/* RESULTS */
 
-    .spec span:first-child {
-      color: var(--muted);
-    }
+.results-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:18px;
+  gap:15px;
+}
 
-    .empty {
-      text-align: center;
-      padding: 60px 20px;
-      color: var(--muted);
-      grid-column: 1 / -1;
-    }
+.results-count{
+  color:var(--muted);
+}
 
-    @media (max-width: 600px) {
-      header {
-        padding: 13px 4%;
-      }
+/* CAMERA GRID */
 
-      main {
-        padding: 28px 4%;
-      }
+.camera-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:18px;
+  padding-bottom:70px;
+}
 
-      .nav {
-        align-items: flex-start;
-      }
+.camera{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:18px;
+  padding:22px;
+  transition:.2s;
+}
 
-      .controls {
-        flex-wrap: wrap;
-        justify-content: flex-end;
-      }
+.camera:hover{
+  transform:translateY(-3px);
+  border-color:var(--text);
+}
 
-      .logo {
-        font-size: 21px;
-      }
-    }
-  </style>
+.camera-image{
+  height:180px;
+  border-radius:13px;
+  background:linear-gradient(135deg,var(--card2),var(--bg));
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:65px;
+  margin-bottom:20px;
+}
+
+.brand{
+  color:var(--muted);
+  font-size:14px;
+  margin-bottom:3px;
+}
+
+.camera h2{
+  font-size:24px;
+  margin-bottom:4px;
+}
+
+.description{
+  color:var(--muted);
+  font-size:14px;
+  margin-bottom:18px;
+}
+
+.specs{
+  border-top:1px solid var(--border);
+}
+
+.spec{
+  display:flex;
+  justify-content:space-between;
+  padding:9px 0;
+  border-bottom:1px solid var(--border);
+  font-size:14px;
+}
+
+.spec span:first-child{
+  color:var(--muted);
+}
+
+.card-actions{
+  display:flex;
+  gap:8px;
+  margin-top:16px;
+}
+
+.card-actions button{
+  flex:1;
+}
+
+.compare-btn.active{
+  background:var(--text);
+  color:var(--bg);
+}
+
+/* EMPTY */
+
+.empty{
+  text-align:center;
+  padding:60px 20px;
+  color:var(--muted);
+  grid-column:1/-1;
+}
+
+/* COMPARISON */
+
+.compare-panel{
+  position:fixed;
+  left:0;
+  right:0;
+  bottom:0;
+  z-index:30;
+  background:var(--card);
+  border-top:1px solid var(--border);
+  padding:18px;
+  box-shadow:0 -10px 40px rgba(0,0,0,.35);
+  transform:translateY(110%);
+  transition:.3s;
+}
+
+.compare-panel.open{
+  transform:translateY(0);
+}
+
+.compare-inner{
+  width:min(1000px,92%);
+  margin:auto;
+}
+
+.compare-top{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:15px;
+}
+
+.compare-items{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:15px;
+}
+
+.compare-item{
+  background:var(--card2);
+  border:1px solid var(--border);
+  padding:15px;
+  border-radius:12px;
+}
+
+.compare-item h3{
+  margin-bottom:8px;
+}
+
+/* FOOTER */
+
+footer{
+  border-top:1px solid var(--border);
+  padding:30px 0;
+  color:var(--muted);
+  text-align:center;
+}
+
+/* MOBILE */
+
+@media(max-width:850px){
+  .filter-grid{
+    grid-template-columns:1fr 1fr;
+  }
+
+  .camera-grid{
+    grid-template-columns:repeat(2,1fr);
+  }
+}
+
+@media(max-width:600px){
+  .nav{
+    min-height:65px;
+  }
+
+  .logo{
+    font-size:23px;
+  }
+
+  .btn{
+    padding:9px 11px;
+  }
+
+  .hero{
+    padding:50px 0 30px;
+  }
+
+  .hero h1{
+    font-size:48px;
+  }
+
+  .hero p{
+    font-size:17px;
+  }
+
+  .filter-grid{
+    grid-template-columns:1fr;
+  }
+
+  .camera-grid{
+    grid-template-columns:1fr;
+  }
+
+  .camera-image{
+    height:200px;
+  }
+
+  .compare-items{
+    grid-template-columns:1fr;
+  }
+}
+</style>
 </head>
 
 <body>
 
 <header>
-  <div class="nav">
+  <div class="container nav">
     <div class="logo">CamSpec</div>
 
-    <div class="controls">
-      <button class="small-button" onclick="toggleLanguage()">EN / PT</button>
-      <button class="small-button" onclick="toggleTheme()">☀ / ☾</button>
+    <div class="nav-actions">
+      <button class="btn" id="languageBtn">EN / PT</button>
+      <button class="btn" id="themeBtn">☀ / ☾</button>
     </div>
   </div>
 </header>
 
-<main>
+<main class="container">
 
-  <section class="hero">
-    <h1 id="title">Camera Database</h1>
-    <p id="subtitle">
-      Explore and compare digital cameras by their specifications.
-    </p>
-  </section>
+<section class="hero">
+  <h1 id="title">Camera Database</h1>
+  <p id="subtitle">
+    Explore and compare digital cameras by their specifications.
+  </p>
+</section>
 
-  <section class="filters">
+<section class="filters">
 
-    <div class="filter-grid">
+  <div class="filter-grid">
 
-      <div class="filter">
-        <label id="searchLabel">Search</label>
-        <input id="search" type="text" placeholder="Camera or manufacturer">
-      </div>
-
-      <div class="filter">
-        <label id="brandLabel">Brand</label>
-        <select id="brand">
-          <option value="">All</option>
-        </select>
-      </div>
-
-      <div class="filter">
-        <label id="screenLabel">Screen type</label>
-        <select id="screen">
-          <option value="">All</option>
-          <option value="fixed">Fixed</option>
-          <option value="articulated">Articulated</option>
-        </select>
-      </div>
-
-      <div class="filter">
-        <label id="cardLabel">Memory card</label>
-        <select id="card">
-          <option value="">All</option>
-          <option value="SD">SD</option>
-          <option value="CF">CF</option>
-          <option value="CFexpress">CFexpress</option>
-          <option value="XQD">XQD</option>
-          <option value="Other">Other</option>
-        </select>
-      </div>
-
+    <div class="field">
+      <label id="searchLabel">Search</label>
+      <input
+        id="search"
+        type="text"
+        placeholder="Camera or manufacturer"
+      >
     </div>
 
-  </section>
+    <div class="field">
+      <label id="brandLabel">Brand</label>
+      <select id="brand">
+        <option value="">All</option>
+      </select>
+    </div>
 
-  <div class="results" id="results"></div>
+    <div class="field">
+      <label id="screenLabel">Screen type</label>
+      <select id="screen">
+        <option value="">All</option>
+        <option value="fixed">Fixed</option>
+        <option value="tilting">Tilting</option>
+        <option value="articulated">Articulated</option>
+      </select>
+    </div>
 
-  <section class="camera-grid" id="cameraGrid"></section>
+    <div class="field">
+      <label id="cardLabel">Memory card</label>
+      <select id="memory">
+        <option value="">All</option>
+        <option value="SD">SD</option>
+        <option value="CF">CF</option>
+        <option value="XQD">XQD</option>
+        <option value="CFexpress">CFexpress</option>
+      </select>
+    </div>
+
+  </div>
+
+</section>
+
+<section>
+
+  <div class="results-header">
+    <div class="results-count" id="count">0 cameras found</div>
+    <button class="btn" id="clearBtn">Clear filters</button>
+  </div>
+
+  <div class="camera-grid" id="cameraGrid"></div>
+
+</section>
 
 </main>
 
+<div class="compare-panel" id="comparePanel">
+
+  <div class="compare-inner">
+
+    <div class="compare-top">
+      <strong id="compareTitle">Compare cameras</strong>
+      <button class="btn" id="closeCompare">Close</button>
+    </div>
+
+    <div class="compare-items" id="compareItems"></div>
+
+  </div>
+
+</div>
+
+<footer>
+  <div class="container">
+    CamSpec — Digital Camera Database
+  </div>
+</footer>
+
 <script>
-  /*
-    CamSpec frontend.
 
-    The database will be connected here later.
-    For now this demonstrates the complete interface.
-  */
+const cameras = [
 
-  const cameras = [
-    {
-      name: "Example Camera",
-      brand: "Example",
-      screen: "articulated",
-      card: "SD"
-    }
-  ];
+  {
+    id:1,
+    brand:"Canon",
+    name:"EOS R5",
+    type:"Mirrorless",
+    sensor:"Full Frame",
+    megapixels:"45 MP",
+    screen:"articulated",
+    memory:"CFexpress",
+    year:"2020",
+    description:"High-resolution full-frame mirrorless camera."
+  },
 
-  let language = "en";
+  {
+    id:2,
+    brand:"Sony",
+    name:"A7 III",
+    type:"Mirrorless",
+    sensor:"Full Frame",
+    megapixels:"24.2 MP",
+    screen:"tilting",
+    memory:"SD",
+    year:"2018",
+    description:"Versatile full-frame camera with excellent autofocus."
+  },
 
-  const translations = {
-    en: {
-      title: "Camera Database",
-      subtitle: "Explore and compare digital cameras by their specifications.",
-      search: "Search",
-      searchPlaceholder: "Camera or manufacturer",
-      brand: "Brand",
-      screen: "Screen type",
-      card: "Memory card",
-      all: "All",
-      fixed: "Fixed",
-      articulated: "Articulated",
-      results: "camera(s) found"
-    },
+  {
+    id:3,
+    brand:"Nikon",
+    name:"D850",
+    type:"DSLR",
+    sensor:"Full Frame",
+    megapixels:"45.7 MP",
+    screen:"tilting",
+    memory:"SD",
+    year:"2017",
+    description:"Professional DSLR known for exceptional image quality."
+  },
 
-    pt: {
-      title: "Base de Dados de Câmaras",
-      subtitle: "Explore e compare câmaras digitais pelas suas especificações.",
-      search: "Pesquisar",
-      searchPlaceholder: "Câmara ou fabricante",
-      brand: "Marca",
-      screen: "Tipo de ecrã",
-      card: "Cartão de memória",
-      all: "Todos",
-      fixed: "Fixo",
-      articulated: "Articulado",
-      results: "câmara(s) encontrada(s)"
-    }
-  };
+  {
+    id:4,
+    brand:"Fujifilm",
+    name:"X-T5",
+    type:"Mirrorless",
+    sensor:"APS-C",
+    megapixels:"40.2 MP",
+    screen:"tilting",
+    memory:"SD",
+    year:"2022",
+    description:"Compact APS-C camera with a high-resolution sensor."
+  },
 
-  function toggleTheme() {
-    const current = document.documentElement.getAttribute("data-theme");
-    document.documentElement.setAttribute(
-      "data-theme",
-      current === "dark" ? "light" : "dark"
+  {
+    id:5,
+    brand:"Sony",
+    name:"A7R IV",
+    type:"Mirrorless",
+    sensor:"Full Frame",
+    megapixels:"61 MP",
+    screen:"tilting",
+    memory:"SD",
+    year:"2019",
+    description:"Extremely high-resolution full-frame mirrorless camera."
+  },
+
+  {
+    id:6,
+    brand:"Canon",
+    name:"EOS R6 Mark II",
+    type:"Mirrorless",
+    sensor:"Full Frame",
+    megapixels:"24.2 MP",
+    screen:"articulated",
+    memory:"SD",
+    year:"2022",
+    description:"Fast full-frame camera designed for photography and video."
+  },
+
+  {
+    id:7,
+    brand:"Nikon",
+    name:"Z8",
+    type:"Mirrorless",
+    sensor:"Full Frame",
+    megapixels:"45.7 MP",
+    screen:"tilting",
+    memory:"CFexpress",
+    year:"2023",
+    description:"High-end mirrorless camera with professional features."
+  },
+
+  {
+    id:8,
+    brand:"Panasonic",
+    name:"Lumix S5 II",
+    type:"Mirrorless",
+    sensor:"Full Frame",
+    megapixels:"24.2 MP",
+    screen:"articulated",
+    memory:"SD",
+    year:"2023",
+    description:"Hybrid full-frame camera focused on photo and video."
+  },
+
+  {
+    id:9,
+    brand:"Olympus",
+    name:"OM-D E-M1 Mark III",
+    type:"Mirrorless",
+    sensor:"Micro Four Thirds",
+    megapixels:"20.4 MP",
+    screen:"articulated",
+    memory:"SD",
+    year:"2020",
+    description:"Compact weather-sealed camera for outdoor photography."
+  }
+
+];
+
+let language = "en";
+let selectedForCompare = [];
+
+const grid = document.getElementById("cameraGrid");
+const search = document.getElementById("search");
+const brand = document.getElementById("brand");
+const screen = document.getElementById("screen");
+const memory = document.getElementById("memory");
+const count = document.getElementById("count");
+const comparePanel = document.getElementById("comparePanel");
+const compareItems = document.getElementById("compareItems");
+
+const translations = {
+
+  en:{
+    title:"Camera Database",
+    subtitle:"Explore and compare digital cameras by their specifications.",
+    searchLabel:"Search",
+    placeholder:"Camera or manufacturer",
+    brand:"Brand",
+    screen:"Screen type",
+    memory:"Memory card",
+    all:"All",
+    found:"cameras found",
+    clear:"Clear filters",
+    compare:"Compare cameras",
+    close:"Close",
+    compareBtn:"Compare",
+    remove:"Remove",
+    screen:"Screen",
+    card:"Memory",
+    sensor:"Sensor",
+    megapixels:"Megapixels",
+    type:"Type",
+    year:"Year"
+  },
+
+  pt:{
+    title:"Base de Dados de Câmaras",
+    subtitle:"Explore e compare câmaras digitais pelas suas especificações.",
+    searchLabel:"Pesquisar",
+    placeholder:"Câmara ou fabricante",
+    brand:"Marca",
+    screen:"Tipo de ecrã",
+    memory:"Cartão de memória",
+    all:"Todas",
+    found:"câmaras encontradas",
+    clear:"Limpar filtros",
+    compare:"Comparar câmaras",
+    close:"Fechar",
+    compareBtn:"Comparar",
+    remove:"Remover",
+    screen:"Ecrã",
+    card:"Memória",
+    sensor:"Sensor",
+    megapixels:"Megapixels",
+    type:"Tipo",
+    year:"Ano"
+  }
+
+};
+
+function populateBrands(){
+
+  const brands = [...new Set(cameras.map(c => c.brand))].sort();
+
+  brands.forEach(b => {
+
+    const option = document.createElement("option");
+
+    option.value = b;
+    option.textContent = b;
+
+    brand.appendChild(option);
+
+  });
+
+}
+
+function render(){
+
+  const q = search.value.toLowerCase().trim();
+
+  const filtered = cameras.filter(camera => {
+
+    const matchesSearch =
+      !q ||
+      camera.name.toLowerCase().includes(q) ||
+      camera.brand.toLowerCase().includes(q) ||
+      camera.type.toLowerCase().includes(q);
+
+    const matchesBrand =
+      !brand.value || camera.brand === brand.value;
+
+    const matchesScreen =
+      !screen.value || camera.screen === screen.value;
+
+    const matchesMemory =
+      !memory.value || camera.memory === memory.value;
+
+    return (
+      matchesSearch &&
+      matchesBrand &&
+      matchesScreen &&
+      matchesMemory
     );
+
+  });
+
+  count.textContent =
+    `${filtered.length} ${translations[language].found}`;
+
+  grid.innerHTML = "";
+
+  if(!filtered.length){
+
+    grid.innerHTML = `
+      <div class="empty">
+        <h2>No cameras found</h2>
+        <p>Try changing your filters or search.</p>
+      </div>
+    `;
+
+    return;
   }
 
-  function toggleLanguage() {
-    language = language === "en" ? "pt" : "en";
+  filtered.forEach(camera => {
 
-    const t = translations[language];
+    const selected =
+      selectedForCompare.includes(camera.id);
 
-    document.getElementById("title").textContent = t.title;
-    document.getElementById("subtitle").textContent = t.subtitle;
-    document.getElementById("searchLabel").textContent = t.search;
-    document.getElementById("search").placeholder = t.searchPlaceholder;
-    document.getElementById("brandLabel").textContent = t.brand;
-    document.getElementById("screenLabel").textContent = t.screen;
-    document.getElementById("cardLabel").textContent = t.card;
+    const card = document.createElement("article");
 
-    render();
-  }
+    card.className = "camera";
 
-  function populateBrands() {
-    const brands = [...new Set(cameras.map(c => c.brand))].sort();
-    const select = document.getElementById("brand");
+    card.innerHTML = `
 
-    select.innerHTML =
-      `<option value="">${translations[language].all}</option>`;
+      <div class="camera-image">📷</div>
 
-    brands.forEach(brand => {
-      const option = document.createElement("option");
-      option.value = brand;
-      option.textContent = brand;
-      select.appendChild(option);
-    });
-  }
+      <div class="brand">${camera.brand}</div>
 
-  function render() {
-    const search = document.getElementById("search").value.toLowerCase();
-    const brand = document.getElementById("brand").value;
-    const screen = document.getElementById("screen").value;
-    const card = document.getElementById("card").value;
+      <h2>${camera.name}</h2>
 
-    const filtered = cameras.filter(camera => {
+      <p class="description">
+        ${camera.description}
+      </p>
 
-      const matchesSearch =
-        !search ||
-        camera.name.toLowerCase().includes(search) ||
-        camera.brand.toLowerCase().includes(search);
-
-      const matchesBrand =
-        !brand || camera.brand === brand;
-
-      const matchesScreen =
-        !screen || camera.screen === screen;
-
-      const matchesCard =
-        !card || camera.card === card;
-
-      return (
-        matchesSearch &&
-        matchesBrand &&
-        matchesScreen &&
-        matchesCard
-      );
-    });
-
-    document.getElementById("results").textContent =
-      `${filtered.length} ${translations[language].results}`;
-
-    const grid = document.getElementById("cameraGrid");
-
-    if (!filtered.length) {
-      grid.innerHTML =
-        `<div class="empty">No cameras match these filters.</div>`;
-      return;
-    }
-
-    grid.innerHTML = filtered.map(camera => `
-      <article class="camera">
-        <h2>${camera.name}</h2>
-        <div class="brand">${camera.brand}</div>
+      <div class="specs">
 
         <div class="spec">
-          <span>Screen</span>
+          <span>${translations[language].type}</span>
+          <strong>${camera.type}</strong>
+        </div>
+
+        <div class="spec">
+          <span>${translations[language].sensor}</span>
+          <strong>${camera.sensor}</strong>
+        </div>
+
+        <div class="spec">
+          <span>${translations[language].megapixels}</span>
+          <strong>${camera.megapixels}</strong>
+        </div>
+
+        <div class="spec">
+          <span>${translations[language].screen}</span>
           <strong>${camera.screen}</strong>
         </div>
 
         <div class="spec">
-          <span>Card</span>
-          <strong>${camera.card}</strong>
+          <span>${translations[language].card}</span>
+          <strong>${camera.memory}</strong>
         </div>
-      </article>
-    `).join("");
+
+        <div class="spec">
+          <span>${translations[language].year}</span>
+          <strong>${camera.year}</strong>
+        </div>
+
+      </div>
+
+      <div class="card-actions">
+
+        <button
+          class="btn compare-btn ${selected ? "active":""}"
+          onclick="toggleCompare(${camera.id})"
+        >
+          ${selected ? "✓ " : ""}${translations[language].compareBtn}
+        </button>
+
+      </div>
+
+    `;
+
+    grid.appendChild(card);
+
+  });
+
+}
+
+function toggleCompare(id){
+
+  if(selectedForCompare.includes(id)){
+
+    selectedForCompare =
+      selectedForCompare.filter(x => x !== id);
+
+  }else{
+
+    if(selectedForCompare.length >= 2){
+
+      alert(
+        language === "en"
+        ? "You can compare up to 2 cameras."
+        : "Podes comparar no máximo 2 câmaras."
+      );
+
+      return;
+    }
+
+    selectedForCompare.push(id);
+
   }
 
-  document
-    .querySelectorAll("input, select")
-    .forEach(element => {
-      element.addEventListener("input", render);
-      element.addEventListener("change", render);
-    });
+  updateCompare();
 
-  populateBrands();
   render();
+
+}
+
+function updateCompare(){
+
+  compareItems.innerHTML = "";
+
+  if(selectedForCompare.length === 0){
+
+    comparePanel.classList.remove("open");
+
+    return;
+
+  }
+
+  comparePanel.classList.add("open");
+
+  selectedForCompare.forEach(id => {
+
+    const camera =
+      cameras.find(c => c.id === id);
+
+    const item =
+      document.createElement("div");
+
+    item.className = "compare-item";
+
+    item.innerHTML = `
+
+      <h3>${camera.brand} ${camera.name}</h3>
+
+      <p>
+        ${translations[language].sensor}:
+        <strong>${camera.sensor}</strong>
+      </p>
+
+      <p>
+        ${translations[language].megapixels}:
+        <strong>${camera.megapixels}</strong>
+      </p>
+
+      <p>
+        ${translations[language].type}:
+        <strong>${camera.type}</strong>
+      </p>
+
+      <p>
+        ${translations[language].card}:
+        <strong>${camera.memory}</strong>
+      </p>
+
+    `;
+
+    compareItems.appendChild(item);
+
+  });
+
+}
+
+function updateLanguage(){
+
+  const t = translations[language];
+
+  document.documentElement.lang =
+    language === "en" ? "en" : "pt";
+
+  document.getElementById("title").textContent =
+    t.title;
+
+  document.getElementById("subtitle").textContent =
+    t.subtitle;
+
+  document.getElementById("searchLabel").textContent =
+    t.searchLabel;
+
+  document.getElementById("search").placeholder =
+    t.placeholder;
+
+  document.getElementById("brandLabel").textContent =
+    t.brand;
+
+  document.getElementById("screenLabel").textContent =
+    t.screen;
+
+  document.getElementById("cardLabel").textContent =
+    t.memory;
+
+  document.getElementById("clearBtn").textContent =
+    t.clear;
+
+  document.getElementById("compareTitle").textContent =
+    t.compare;
+
+  document.getElementById("closeCompare").textContent =
+    t.close;
+
+  render();
+
+}
+
+search.addEventListener("input",render);
+brand.addEventListener("change",render);
+screen.addEventListener("change",render);
+memory.addEventListener("change",render);
+
+document.getElementById("clearBtn")
+.addEventListener("click",()=>{
+
+  search.value="";
+  brand.value="";
+  screen.value="";
+  memory.value="";
+
+  render();
+
+});
+
+document.getElementById("languageBtn")
+.addEventListener("click",()=>{
+
+  language =
+    language === "en" ? "pt" : "en";
+
+  updateLanguage();
+
+});
+
+document.getElementById("themeBtn")
+.addEventListener("click",()=>{
+
+  const current =
+    document.documentElement.getAttribute("data-theme");
+
+  document.documentElement.setAttribute(
+    "data-theme",
+    current === "light" ? "dark" : "light"
+  );
+
+});
+
+document.getElementById("closeCompare")
+.addEventListener("click",()=>{
+
+  selectedForCompare = [];
+
+  updateCompare();
+
+  render();
+
+});
+
+populateBrands();
+updateLanguage();
+
 </script>
 
 </body>
