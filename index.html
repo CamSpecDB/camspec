@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CamSpec — Camera Database</title>
+
+  <style>
+    :root {
+      --bg: #f5f6f8;
+      --card: #ffffff;
+      --text: #15171a;
+      --muted: #6b7078;
+      --border: #e0e3e7;
+      --accent: #2563eb;
+    }
+
+    [data-theme="dark"] {
+      --bg: #101216;
+      --card: #181b21;
+      --text: #f3f4f6;
+      --muted: #9ca3af;
+      --border: #2b3038;
+      --accent: #60a5fa;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      transition: background .2s, color .2s;
+    }
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 5%;
+    }
+
+    .nav {
+      max-width: 1400px;
+      margin: auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+
+    .logo {
+      font-size: 25px;
+      font-weight: 800;
+      letter-spacing: -1px;
+    }
+
+    .controls {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    button, select, input {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    .small-button {
+      border: 1px solid var(--border);
+      background: var(--card);
+      color: var(--text);
+      border-radius: 9px;
+      padding: 9px 12px;
+    }
+
+    main {
+      max-width: 1400px;
+      margin: auto;
+      padding: 40px 5%;
+    }
+
+    .hero {
+      margin-bottom: 35px;
+    }
+
+    h1 {
+      font-size: clamp(32px, 5vw, 52px);
+      margin: 0 0 10px;
+      letter-spacing: -2px;
+    }
+
+    .hero p {
+      color: var(--muted);
+      font-size: 18px;
+      max-width: 700px;
+    }
+
+    .filters {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 30px;
+    }
+
+    .filter-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 14px;
+    }
+
+    .filter label {
+      display: block;
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .filter input,
+    .filter select {
+      width: 100%;
+      padding: 11px;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .results {
+      color: var(--muted);
+      margin-bottom: 15px;
+    }
+
+    .camera-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 18px;
+    }
+
+    .camera {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
+      transition: transform .15s, border-color .15s;
+    }
+
+    .camera:hover {
+      transform: translateY(-2px);
+      border-color: var(--accent);
+    }
+
+    .camera h2 {
+      margin: 0 0 5px;
+      font-size: 20px;
+    }
+
+    .camera .brand {
+      color: var(--muted);
+      margin-bottom: 18px;
+    }
+
+    .spec {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 7px 0;
+      border-top: 1px solid var(--border);
+      font-size: 14px;
+    }
+
+    .spec span:first-child {
+      color: var(--muted);
+    }
+
+    .empty {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--muted);
+      grid-column: 1 / -1;
+    }
+
+    @media (max-width: 600px) {
+      header {
+        padding: 13px 4%;
+      }
+
+      main {
+        padding: 28px 4%;
+      }
+
+      .nav {
+        align-items: flex-start;
+      }
+
+      .controls {
+        flex-wrap: wrap;
+        justify-content: flex-end;
+      }
+
+      .logo {
+        font-size: 21px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <div class="nav">
+    <div class="logo">CamSpec</div>
+
+    <div class="controls">
+      <button class="small-button" onclick="toggleLanguage()">EN / PT</button>
+      <button class="small-button" onclick="toggleTheme()">☀ / ☾</button>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <section class="hero">
+    <h1 id="title">Camera Database</h1>
+    <p id="subtitle">
+      Explore and compare digital cameras by their specifications.
+    </p>
+  </section>
+
+  <section class="filters">
+
+    <div class="filter-grid">
+
+      <div class="filter">
+        <label id="searchLabel">Search</label>
+        <input id="search" type="text" placeholder="Camera or manufacturer">
+      </div>
+
+      <div class="filter">
+        <label id="brandLabel">Brand</label>
+        <select id="brand">
+          <option value="">All</option>
+        </select>
+      </div>
+
+      <div class="filter">
+        <label id="screenLabel">Screen type</label>
+        <select id="screen">
+          <option value="">All</option>
+          <option value="fixed">Fixed</option>
+          <option value="articulated">Articulated</option>
+        </select>
+      </div>
+
+      <div class="filter">
+        <label id="cardLabel">Memory card</label>
+        <select id="card">
+          <option value="">All</option>
+          <option value="SD">SD</option>
+          <option value="CF">CF</option>
+          <option value="CFexpress">CFexpress</option>
+          <option value="XQD">XQD</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+
+    </div>
+
+  </section>
+
+  <div class="results" id="results"></div>
+
+  <section class="camera-grid" id="cameraGrid"></section>
+
+</main>
+
+<script>
+  /*
+    CamSpec frontend.
+
+    The database will be connected here later.
+    For now this demonstrates the complete interface.
+  */
+
+  const cameras = [
+    {
+      name: "Example Camera",
+      brand: "Example",
+      screen: "articulated",
+      card: "SD"
+    }
+  ];
+
+  let language = "en";
+
+  const translations = {
+    en: {
+      title: "Camera Database",
+      subtitle: "Explore and compare digital cameras by their specifications.",
+      search: "Search",
+      searchPlaceholder: "Camera or manufacturer",
+      brand: "Brand",
+      screen: "Screen type",
+      card: "Memory card",
+      all: "All",
+      fixed: "Fixed",
+      articulated: "Articulated",
+      results: "camera(s) found"
+    },
+
+    pt: {
+      title: "Base de Dados de Câmaras",
+      subtitle: "Explore e compare câmaras digitais pelas suas especificações.",
+      search: "Pesquisar",
+      searchPlaceholder: "Câmara ou fabricante",
+      brand: "Marca",
+      screen: "Tipo de ecrã",
+      card: "Cartão de memória",
+      all: "Todos",
+      fixed: "Fixo",
+      articulated: "Articulado",
+      results: "câmara(s) encontrada(s)"
+    }
+  };
+
+  function toggleTheme() {
+    const current = document.documentElement.getAttribute("data-theme");
+    document.documentElement.setAttribute(
+      "data-theme",
+      current === "dark" ? "light" : "dark"
+    );
+  }
+
+  function toggleLanguage() {
+    language = language === "en" ? "pt" : "en";
+
+    const t = translations[language];
+
+    document.getElementById("title").textContent = t.title;
+    document.getElementById("subtitle").textContent = t.subtitle;
+    document.getElementById("searchLabel").textContent = t.search;
+    document.getElementById("search").placeholder = t.searchPlaceholder;
+    document.getElementById("brandLabel").textContent = t.brand;
+    document.getElementById("screenLabel").textContent = t.screen;
+    document.getElementById("cardLabel").textContent = t.card;
+
+    render();
+  }
+
+  function populateBrands() {
+    const brands = [...new Set(cameras.map(c => c.brand))].sort();
+    const select = document.getElementById("brand");
+
+    select.innerHTML =
+      `<option value="">${translations[language].all}</option>`;
+
+    brands.forEach(brand => {
+      const option = document.createElement("option");
+      option.value = brand;
+      option.textContent = brand;
+      select.appendChild(option);
+    });
+  }
+
+  function render() {
+    const search = document.getElementById("search").value.toLowerCase();
+    const brand = document.getElementById("brand").value;
+    const screen = document.getElementById("screen").value;
+    const card = document.getElementById("card").value;
+
+    const filtered = cameras.filter(camera => {
+
+      const matchesSearch =
+        !search ||
+        camera.name.toLowerCase().includes(search) ||
+        camera.brand.toLowerCase().includes(search);
+
+      const matchesBrand =
+        !brand || camera.brand === brand;
+
+      const matchesScreen =
+        !screen || camera.screen === screen;
+
+      const matchesCard =
+        !card || camera.card === card;
+
+      return (
+        matchesSearch &&
+        matchesBrand &&
+        matchesScreen &&
+        matchesCard
+      );
+    });
+
+    document.getElementById("results").textContent =
+      `${filtered.length} ${translations[language].results}`;
+
+    const grid = document.getElementById("cameraGrid");
+
+    if (!filtered.length) {
+      grid.innerHTML =
+        `<div class="empty">No cameras match these filters.</div>`;
+      return;
+    }
+
+    grid.innerHTML = filtered.map(camera => `
+      <article class="camera">
+        <h2>${camera.name}</h2>
+        <div class="brand">${camera.brand}</div>
+
+        <div class="spec">
+          <span>Screen</span>
+          <strong>${camera.screen}</strong>
+        </div>
+
+        <div class="spec">
+          <span>Card</span>
+          <strong>${camera.card}</strong>
+        </div>
+      </article>
+    `).join("");
+  }
+
+  document
+    .querySelectorAll("input, select")
+    .forEach(element => {
+      element.addEventListener("input", render);
+      element.addEventListener("change", render);
+    });
+
+  populateBrands();
+  render();
+</script>
+
+</body>
+</html>
